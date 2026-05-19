@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntegrOn — Gerenciamento de CNPJs | Winix Tech</title>
+    <style>
+        :root {
+            --yellow:       #FFE234;
+            --yellow-dark:  #C8B400;
+            --dark:         #1A1A1A;
+            --dark-mid:     #2D2D2D;
+            --dark-light:   #3D3D3D;
+            --gray-light:   #F7F7F7;
+            --gray-mid:     #E4E4E4;
+            --gray-text:    #666666;
+            --white:        #FFFFFF;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 14.5px;
+            line-height: 1.65;
+            color: #333;
+            background: #EBEBEB;
+        }
+
+        /* ── HEADER ── */
+        .site-header {
+            background: var(--dark);
+            border-bottom: 4px solid var(--yellow);
+        }
+        .header-inner {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 22px 40px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+        .header-logo { height: 56px; width: auto; }
+        .header-rule { width: 1px; height: 46px; background: var(--dark-light); flex-shrink: 0; }
+        .header-text h1 { color: var(--white); font-size: 22px; font-weight: 700; letter-spacing: -0.2px; }
+        .header-text .badge {
+            display: inline-block;
+            margin-top: 4px;
+            background: var(--yellow);
+            color: var(--dark);
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.4px;
+            padding: 2px 9px;
+            border-radius: 2px;
+        }
+
+        /* ── META BAR ── */
+        .meta-bar { background: var(--dark-mid); border-bottom: 1px solid var(--dark-light); }
+        .meta-bar-inner {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 7px 40px;
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+            font-size: 11.5px;
+            color: #999;
+        }
+        .meta-bar-inner span strong { color: #CCC; margin-right: 4px; }
+
+        /* ── LAYOUT ── */
+        .layout {
+            max-width: 1140px;
+            margin: 32px auto;
+            padding: 0 24px;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        /* ── TOC ── */
+        .toc {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid var(--gray-mid);
+            overflow: hidden;
+            position: sticky;
+            top: 24px;
+        }
+        .toc-title {
+            background: var(--dark);
+            color: var(--yellow);
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.6px;
+            padding: 11px 16px;
+        }
+        .toc ul { list-style: none; padding: 10px 0; }
+        .toc ul li.divider { border-top: 1px solid var(--gray-mid); margin: 6px 0; }
+        .toc ul li a {
+            display: block;
+            padding: 6px 16px;
+            color: #505050;
+            text-decoration: none;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+            transition: background 0.12s, border-color 0.12s;
+        }
+        .toc ul li a:hover {
+            background: var(--gray-light);
+            border-left-color: var(--yellow);
+            color: var(--dark);
+        }
+
+        /* ── MAIN ── */
+        .main { display: flex; flex-direction: column; gap: 20px; }
+
+        /* ── OVERVIEW ── */
+        .overview {
+            background: var(--dark);
+            border-radius: 8px;
+            padding: 24px 28px;
+            border-left: 5px solid var(--yellow);
+        }
+        .overview p { color: #C8C8C8; font-size: 14.5px; line-height: 1.7; }
+        .overview code { background: var(--dark-light); color: var(--yellow); border: none; padding: 1px 6px; border-radius: 3px; }
+        .overview strong { color: var(--white); }
+
+        /* ── CARD / SECTION ── */
+        .card {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid var(--gray-mid);
+            overflow: hidden;
+        }
+        .card-header {
+            background: var(--dark);
+            padding: 13px 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card-header h2 { color: var(--white); font-size: 16px; font-weight: 600; }
+        .num-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 26px; height: 26px;
+            background: var(--yellow); color: var(--dark);
+            font-size: 12px; font-weight: 700; border-radius: 50%; flex-shrink: 0;
+        }
+        .card-body { padding: 22px 24px; }
+        .card-body > p { color: #555; margin-bottom: 14px; }
+        .card-body > p:last-child { margin-bottom: 0; }
+
+        /* ── STEP ── */
+        .step { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--gray-mid); }
+        .step:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+        .step-head { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+        .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px;
+            background: var(--yellow); color: var(--dark);
+            font-size: 10px; font-weight: 700; border-radius: 50%; flex-shrink: 0;
+        }
+        .step-head h3 { font-size: 14.5px; font-weight: 600; color: var(--dark); }
+        .step p { color: #555; margin-bottom: 12px; }
+        .step p:last-child { margin-bottom: 0; }
+        .step ol { margin: 8px 0 14px 20px; color: #555; }
+        .step ol li { margin-bottom: 5px; }
+
+        /* ── TABLES ── */
+        .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+        .tbl thead tr { background: var(--dark); }
+        .tbl thead th {
+            color: var(--yellow); font-size: 10.5px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.7px;
+            padding: 9px 13px; text-align: left; white-space: nowrap;
+        }
+        .tbl tbody tr { border-bottom: 1px solid var(--gray-mid); }
+        .tbl tbody tr:last-child { border-bottom: none; }
+        .tbl tbody tr:hover { background: var(--gray-light); }
+        .tbl tbody td { padding: 9px 13px; color: #444; vertical-align: top; }
+        .tbl tbody td:first-child {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            color: var(--dark); font-weight: 500; white-space: nowrap;
+        }
+
+        /* ── CODE BLOCKS ── */
+        .code-wrap { background: #1E1E1E; border-radius: 6px; margin: 12px 0; overflow: hidden; }
+        .code-lang {
+            background: #2A2A2A; padding: 5px 13px;
+            font-size: 10.5px; color: #999; font-weight: 500;
+            border-bottom: 1px solid #333;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .code-lang::before {
+            content: ''; display: inline-block;
+            width: 7px; height: 7px; border-radius: 50%; background: var(--yellow);
+        }
+        .code-wrap pre { padding: 14px 16px; overflow-x: auto; margin: 0; }
+        .code-wrap code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 12.5px; color: #D4D4D4; line-height: 1.6;
+            background: none; border: none; padding: 0;
+        }
+        .cm  { color: #6A9955; }   /* comment */
+        .kw  { color: #FFE234; }   /* keyword / yaml-key */
+        .str { color: #CE9178; }   /* string */
+        .kn  { color: #9CDCFE; }   /* keyword name (Get-Content, etc.) */
+
+        /* ── INLINE CODE ── */
+        code {
+            background: #F0F0F0; border: 1px solid #DEDEDE;
+            border-radius: 3px; padding: 1px 5px;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 12.5px; color: #C0392B;
+        }
+        .code-wrap code { background: none; border: none; padding: 0; color: #D4D4D4; }
+
+        /* ── CALLOUTS ── */
+        .callout {
+            border-radius: 6px; padding: 13px 15px;
+            margin: 12px 0; display: flex; gap: 10px;
+            align-items: flex-start; font-size: 13.5px; line-height: 1.6;
+        }
+        .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+        .callout-body strong { display: block; margin-bottom: 3px; }
+        .callout.warn    { background: #FFFBEA; border: 1px solid #FFD600; border-left: 4px solid #FFD600; }
+        .callout.danger  { background: #FFF5F5; border: 1px solid #E57373; border-left: 4px solid #C0392B; }
+        .callout.info    { background: #F0F7FF; border: 1px solid #90CAF9; border-left: 4px solid #1976D2; }
+        .callout.success { background: #F0FFF5; border: 1px solid #81C784; border-left: 4px solid #27AE60; }
+
+        /* ── PREREQ GRID ── */
+        .prereq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+        .prereq-card { background: var(--gray-light); border: 1px solid var(--gray-mid); border-radius: 6px; padding: 12px 14px; }
+        .prereq-card .lbl { font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: var(--gray-text); letter-spacing: 0.7px; margin-bottom: 3px; }
+        .prereq-card .val { font-size: 13px; color: var(--dark); }
+
+        /* ── LOG LEVEL BADGES ── */
+        .lvl {
+            display: inline-block; padding: 2px 7px; border-radius: 10px;
+            font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .lvl-info { background: #E3F2FD; color: #1565C0; }
+        .lvl-warn { background: #FFF8E1; color: #F57F17; }
+
+        /* ── FILES TABLE HIGHLIGHT ── */
+        .tbl.files tbody td:first-child { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+
+        /* ── FOOTER ── */
+        .site-footer { background: var(--dark); border-top: 3px solid var(--yellow); margin-top: 48px; }
+        .footer-inner {
+            max-width: 1140px; margin: 0 auto; padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .footer-inner p { color: #777; font-size: 12px; }
+        .footer-logo { height: 28px; opacity: 0.65; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 820px) {
+            .layout { grid-template-columns: 1fr; }
+            .toc { position: static; }
+            .prereq-grid { grid-template-columns: 1fr; }
+            .header-inner { padding: 16px 20px; }
+            .meta-bar-inner { padding: 7px 20px; }
+        }
+        @media print {
+            body { background: white; }
+            .toc, .meta-bar { display: none; }
+            .layout { grid-template-columns: 1fr; max-width: 100%; margin: 0; padding: 0; }
+            .card { break-inside: avoid; border: 1px solid #CCC; }
+            .site-header, .site-footer { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="site-header">
+    <div class="header-inner">
+        <img src="./winix_logo_yellow.png" alt="Winix Tech" class="header-logo">
+        <div class="header-rule"></div>
+        <div class="header-text">
+            <h1>IntegrOn — Gerenciamento de CNPJs</h1>
+            <span class="badge">Guia Operacional</span>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════════ META BAR ═══════════════ -->
+<div class="meta-bar">
+    <div class="meta-bar-inner">
+        <span><strong>Serviço</strong>IntegrOn NFS-e Collector</span>
+        <span><strong>Versão</strong>1.0</span>
+        <span><strong>Data</strong>2026-05-18</span>
+        <span><strong>Classificação</strong>Operacional</span>
+        <span><strong>Fornecedor</strong>Winix Tech</span>
+    </div>
+</div>
+
+<!-- ═══════════════ LAYOUT ═══════════════ -->
+<div class="layout">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="toc">
+        <div class="toc-title">Índice</div>
+        <ul>
+            <li><a href="#visao-geral">Visão Geral</a></li>
+            <li><a href="#arquivos">Arquivos do Sistema</a></li>
+            <li><a href="#prereqs">Pré-requisitos</a></li>
+            <li class="divider"></li>
+            <li><a href="#adicionar">1 · Adicionar um Novo CNPJ</a></li>
+            <li><a href="#alterar">2 · Alterar Configuração</a></li>
+            <li><a href="#remover">3 · Remover um CNPJ</a></li>
+            <li><a href="#nsu">4 · Redefinir o Ponteiro NSU</a></li>
+            <li class="divider"></li>
+            <li><a href="#verificar">Verificar o Resultado</a></li>
+            <li><a href="#resolucao">Resolução de Problemas</a></li>
+        </ul>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="main">
+
+        <!-- VISÃO GERAL -->
+        <div class="overview" id="visao-geral">
+            <p>O IntegrOn mantém a lista de CNPJs no arquivo YAML <code>config_cnpj_integration.yaml</code> e o valor
+            do ponteiro NSU no arquivo <code>&lt;CNPJ&gt;.txt</code>. Esses arquivos são lidos a cada ciclo de
+            integração — qualquer alteração entra em vigor automaticamente no próximo ciclo CRON,
+            <strong>sem reiniciar o serviço</strong>.</p>
+        </div>
+
+        <!-- ARQUIVOS DO SISTEMA -->
+        <div class="card" id="arquivos">
+            <div class="card-header"><h2>Arquivos do Sistema</h2></div>
+            <div class="card-body">
+                <table class="tbl files">
+                    <thead><tr><th>Arquivo</th><th>Localização padrão</th><th>Função</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>config_cnpj_integration.yaml</td>
+                            <td>C:\integron\</td>
+                            <td>Lista de contas CNPJ — certificado, modo batch e identificação</td>
+                        </tr>
+                        <tr>
+                            <td>&lt;CNPJ&gt;.txt</td>
+                            <td>C:\integron\nsu\</td>
+                            <td>Ponteiro NSU por CNPJ — último NSU processado com sucesso</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PRÉ-REQUISITOS -->
+        <div class="card" id="prereqs">
+            <div class="card-header"><h2>Pré-requisitos</h2></div>
+            <div class="card-body">
+                <div class="callout warn">
+                    <span class="callout-icon">⚠️</span>
+                    <div class="callout-body">
+                        <strong>Antes de começar</strong>
+                        Toda operação de CNPJ requer acesso de administrador à VM e as credenciais do Azure fornecidas pelo cliente.
+                    </div>
+                </div>
+                <div class="prereq-grid">
+                    <div class="prereq-card">
+                        <div class="lbl">Acesso necessário</div>
+                        <div class="val">Administrador à VM Windows — PowerShell como Administrador</div>
+                    </div>
+                    <div class="prereq-card">
+                        <div class="lbl">Certificado digital</div>
+                        <div class="val">Nome do certificado no Azure Key Vault — fornecido pelo cliente</div>
+                    </div>
+                    <div class="prereq-card">
+                        <div class="lbl">Credencial Azure</div>
+                        <div class="val">Permissão <code>Key Vault Secrets Officer</code> ou superior</div>
+                    </div>
+                    <div class="prereq-card">
+                        <div class="lbl">CNPJ válido</div>
+                        <div class="val">14 dígitos com dígito verificador correto — validar antes de configurar</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ 1. ADICIONAR ════ -->
+        <div class="card" id="adicionar">
+            <div class="card-header">
+                <span class="num-badge">1</span>
+                <h2>Adicionar um Novo CNPJ</h2>
+            </div>
+            <div class="card-body">
+                <p>Siga os passos em ordem. Não é necessário reiniciar o serviço.</p>
+
+                <!-- Passo 1 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">1</span><h3>Adicionar o CNPJ ao arquivo de configuração</h3></div>
+                    <p>Edite o arquivo <code>C:\integron\config_cnpj_integration.yaml</code> e acrescente uma nova entrada na lista <code>accounts</code>:</p>
+                    <div class="code-wrap">
+                        <div class="code-lang">YAML — config_cnpj_integration.yaml</div>
+                        <pre><code><span class="kw">accounts</span>:
+  <span class="cm"># CNPJs existentes...</span>
+  - <span class="kw">cnpj</span>: <span class="str">"12345678000195"</span>
+    <span class="kw">certificateName</span>: <span class="str">"nfse-cert-empresa-a"</span>
+    <span class="kw">batchQuery</span>: true
+
+  <span class="cm"># ← Novo CNPJ adicionado aqui</span>
+  - <span class="kw">cnpj</span>: <span class="str">"98765432000100"</span>
+    <span class="kw">certificateName</span>: <span class="str">"nfse-cert-empresa-nova"</span>
+    <span class="kw">batchQuery</span>: true</code></pre>
+                    </div>
+                    <table class="tbl">
+                        <thead><tr><th>Campo</th><th>Regra</th></tr></thead>
+                        <tbody>
+                            <tr><td>cnpj</td><td>14 dígitos numéricos. Deve passar na validação de dígito verificador. Deve ser único na lista.</td></tr>
+                            <tr><td>certificateName</td><td>Nome exato do segredo no Azure Key Vault</td></tr>
+                            <tr><td>batchQuery</td><td>Quando <code>false</code>, a API retornará apenas um elemento; com <code>true</code> poderá retornar uma lista de NFS-e</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Passo 2 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">2</span><h3>Criar o arquivo de ponteiro NSU</h3></div>
+                    <p>Cada CNPJ precisa de um arquivo <code>&lt;CNPJ&gt;.txt</code> no diretório <code>C:\integron\nsu\</code> com o NSU inicial. Execute no PowerShell <strong>como Administrador</strong>:</p>
+                    <div class="code-wrap">
+                        <div class="code-lang">PowerShell — como Administrador</div>
+                        <pre><code><span class="cm"># Substitua 98765432000100 pelo CNPJ real (somente dígitos)</span>
+<span class="str">"0"</span> | <span class="kn">Set-Content</span> -Path <span class="str">"C:\integron\nsu\98765432000100.txt"</span> -Encoding UTF8</code></pre>
+                    </div>
+                    <div class="callout info">
+                        <span class="callout-icon">💡</span>
+                        <div class="callout-body">
+                            <strong>NSU inicial diferente de zero?</strong>
+                            Se o CNPJ já foi processado anteriormente em outro sistema, informe o último NSU conhecido para evitar re-download de documentos já coletados. Substitua <code>"0"</code> pelo valor correto.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passo 3 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">3</span><h3>Confirmar no próximo ciclo CRON</h3></div>
+                    <div class="callout success">
+                        <span class="callout-icon">✅</span>
+                        <div class="callout-body">
+                            <strong>Sem reinicialização</strong>
+                            O IntegrOn detectará o novo CNPJ automaticamente no próximo ciclo CRON. Nenhuma espera ou reinicialização é necessária.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ 2. ALTERAR ════ -->
+        <div class="card" id="alterar">
+            <div class="card-header">
+                <span class="num-badge">2</span>
+                <h2>Alterar Configuração de um CNPJ</h2>
+            </div>
+            <div class="card-body">
+                <p>Atualize campos como certificado ou modo batch sem interromper o serviço.</p>
+
+                <!-- Passo 1 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">1</span><h3>Identificar o CNPJ a alterar</h3></div>
+                    <p>Abra <code>C:\integron\config_cnpj_integration.yaml</code> e localize a entrada pelo valor do campo <code>cnpj</code>.</p>
+                </div>
+
+                <!-- Passo 2 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">2</span><h3>Fazer a alteração desejada</h3></div>
+                    <p><strong>Trocar o certificado digital:</strong></p>
+                    <ol>
+                        <li>Faça upload do novo certificado no Azure Key Vault.</li>
+                        <li>Atualize o campo <code>certificateName</code> no YAML com o nome do novo segredo.</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Alterar o modo batch:</strong></p>
+                    <div class="code-wrap">
+                        <div class="code-lang">YAML — alteração de batchQuery</div>
+                        <pre><code>  - <span class="kw">cnpj</span>: <span class="str">"12345678000195"</span>
+    <span class="kw">certificateName</span>: <span class="str">"nfse-cert-empresa-a"</span>
+    <span class="kw">batchQuery</span>: false  <span class="cm"># alterado de true para false</span></code></pre>
+                    </div>
+                    <div class="callout warn">
+                        <span class="callout-icon">⚠️</span>
+                        <div class="callout-body">
+                            <strong>Não altere o campo <code>cnpj</code></strong>
+                            O CNPJ é a chave de identificação. Para trocar o CNPJ, remova a entrada antiga e adicione uma nova seguindo o fluxo de Adicionar CNPJ.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passo 3 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">3</span><h3>Confirmar no próximo ciclo CRON</h3></div>
+                    <div class="callout success">
+                        <span class="callout-icon">✅</span>
+                        <div class="callout-body">A alteração entra em vigor automaticamente no próximo ciclo CRON. Nenhuma reinicialização é necessária.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ 3. REMOVER ════ -->
+        <div class="card" id="remover">
+            <div class="card-header">
+                <span class="num-badge">3</span>
+                <h2>Remover um CNPJ</h2>
+            </div>
+            <div class="card-body">
+                <p>Desative a coleta de NFS-e para um CNPJ sem apagar histórico.</p>
+                <div class="callout warn">
+                    <span class="callout-icon">⚠️</span>
+                    <div class="callout-body">
+                        <strong>Preserve o arquivo de ponteiro NSU</strong>
+                        Antes de remover o arquivo <code>&lt;CNPJ&gt;.txt</code>, confirme se a coleta foi concluída. O arquivo registra o último NSU processado — se o CNPJ for reativado no futuro, ele poderá retomar de onde parou.
+                    </div>
+                </div>
+
+                <!-- Passo 1 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">1</span><h3>Remover a entrada do arquivo de configuração</h3></div>
+                    <p>Edite <code>C:\integron\config_cnpj_integration.yaml</code> e <strong>delete a entrada completa</strong> do CNPJ:</p>
+                    <div class="code-wrap">
+                        <div class="code-lang">YAML — antes da remoção</div>
+                        <pre><code><span class="kw">accounts</span>:
+  - <span class="kw">cnpj</span>: <span class="str">"12345678000195"</span>  <span class="cm"># ← manter</span>
+    <span class="kw">certificateName</span>: <span class="str">"nfse-cert-empresa-a"</span>
+    <span class="kw">batchQuery</span>: true
+
+  - <span class="kw">cnpj</span>: <span class="str">"98765432000100"</span>  <span class="cm"># ← remover este bloco</span>
+    <span class="kw">certificateName</span>: <span class="str">"nfse-cert-empresa-b"</span>
+    <span class="kw">batchQuery</span>: true</code></pre>
+                    </div>
+                    <div class="code-wrap">
+                        <div class="code-lang">YAML — após a remoção</div>
+                        <pre><code><span class="kw">accounts</span>:
+  - <span class="kw">cnpj</span>: <span class="str">"12345678000195"</span>
+    <span class="kw">certificateName</span>: <span class="str">"nfse-cert-empresa-a"</span>
+    <span class="kw">batchQuery</span>: true</code></pre>
+                    </div>
+                    <div class="callout danger">
+                        <span class="callout-icon">🚫</span>
+                        <div class="callout-body">
+                            <strong>Nunca esvazie a lista</strong>
+                            O arquivo deve sempre conter ao menos um CNPJ. Uma lista vazia causa falha na inicialização (<code>STEP_02_ACCOUNT_LIST_LOADED</code>).
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Passo 2 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">2</span><h3>Confirmar no próximo ciclo CRON</h3></div>
+                    <div class="callout success">
+                        <span class="callout-icon">✅</span>
+                        <div class="callout-body">O CNPJ deixará de ser processado a partir do próximo ciclo CRON. Nenhuma reinicialização é necessária.</div>
+                    </div>
+                </div>
+
+                <!-- Passo 3 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">3</span><h3>(Opcional) Arquivar o arquivo de ponteiro NSU</h3></div>
+                    <p>Recomenda-se manter o arquivo <code>&lt;CNPJ&gt;.txt</code> em <code>C:\integron\nsu\</code>. Se desejado, mova-o para um diretório de arquivo em vez de deletar:</p>
+                    <div class="code-wrap">
+                        <div class="code-lang">PowerShell — mover para arquivo</div>
+                        <pre><code><span class="cm"># Mover para arquivo (não deletar)</span>
+<span class="kn">New-Item</span> -ItemType Directory -Path <span class="str">"C:\integron\nsu\arquivados"</span> -Force
+<span class="kn">Move-Item</span> <span class="str">"C:\integron\nsu\98765432000100.txt"</span> <span class="str">"C:\integron\nsu\arquivados\"</span></code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ 4. NSU ════ -->
+        <div class="card" id="nsu">
+            <div class="card-header">
+                <span class="num-badge">4</span>
+                <h2>Redefinir o Ponteiro NSU</h2>
+            </div>
+            <div class="card-body">
+                <p>Reinicie ou ajuste o ponto de coleta de um CNPJ específico.</p>
+                <div class="callout danger">
+                    <span class="callout-icon">🚨</span>
+                    <div class="callout-body">
+                        <strong>Ação irreversível sem backup</strong>
+                        Redefinir o NSU para <code>0</code> fará o serviço baixar novamente todos os documentos desde o início. Isso pode gerar tráfego e custo de storage desnecessários (o IntegrOn sobrescreve arquivos existentes, portanto não haverá dados corrompidos).
+                    </div>
+                </div>
+
+                <!-- Passo 1 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">1</span><h3>Verificar o NSU atual</h3></div>
+                    <div class="code-wrap">
+                        <div class="code-lang">PowerShell</div>
+                        <pre><code><span class="cm"># Ver o NSU atual do CNPJ</span>
+<span class="kn">Get-Content</span> <span class="str">"C:\integron\nsu\12345678000195.txt"</span>
+<span class="cm"># Exemplo de saída: 1000423</span></code></pre>
+                    </div>
+                </div>
+
+                <!-- Passo 2 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">2</span><h3>Aguardar o ciclo CRON não estar em execução</h3></div>
+                    <p>O IntegrOn possui um <strong>overlap guard</strong>: se um ciclo estiver ativo, o próximo é descartado. Para alterar o NSU com segurança, aguarde a conclusão do ciclo atual verificando o log:</p>
+                    <div class="code-wrap">
+                        <div class="code-lang">PowerShell — verificar estado do ciclo</div>
+                        <pre><code><span class="cm"># Aguardar "Integration completed" ou "Integration started" recente</span>
+<span class="kn">Get-Content</span> <span class="str">"C:\integron\logs\integron.log"</span> -Tail 20 |
+  <span class="kn">Where-Object</span> { $_ -match <span class="str">"Integration"</span> }</code></pre>
+                    </div>
+                </div>
+
+                <!-- Passo 3 -->
+                <div class="step">
+                    <div class="step-head"><span class="step-num">3</span><h3>Definir o novo valor de NSU</h3></div>
+                    <div class="code-wrap">
+                        <div class="code-lang">PowerShell — redefinir NSU</div>
+                        <pre><code><span class="cm"># Redefinir para zero (reiniciar coleta do início)</span>
+<span class="str">"0"</span> | <span class="kn">Set-Content</span> -Path <span class="str">"C:\integron\nsu\12345678000195.txt"</span> -Encoding UTF8
+
+<span class="cm"># OU definir para um NSU específico (retomar de um ponto conhecido)</span>
+<span class="str">"1000000"</span> | <span class="kn">Set-Content</span> -Path <span class="str">"C:\integron\nsu\12345678000195.txt"</span> -Encoding UTF8</code></pre>
+                    </div>
+                    <div class="callout info">
+                        <span class="callout-icon">ℹ️</span>
+                        <div class="callout-body">
+                            <strong>Formato do arquivo</strong>
+                            O arquivo deve conter <strong>apenas um número inteiro não-negativo</strong>. Qualquer outro conteúdo causa falha no passo <code>STEP_04_NSU_POINTER_READ</code> e gera um incidente.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ VERIFICAR ════ -->
+        <div class="card" id="verificar">
+            <div class="card-header"><h2>Verificar o Resultado</h2></div>
+            <div class="card-body">
+                <p>Após qualquer operação, confirme que está funcionando corretamente.</p>
+
+                <div class="step">
+                    <div class="step-head"><span class="step-num">1</span><h3>Monitorar o log após a próxima execução do CRON</h3></div>
+                    <div class="code-wrap">
+                        <div class="code-lang">PowerShell — filtrar por CNPJ</div>
+                        <pre><code><span class="kn">Get-Content</span> <span class="str">"C:\integron\logs\integron.log"</span> -Tail 50 |
+  <span class="kn">Where-Object</span> { $_ -match <span class="str">"98765432000100"</span> }</code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-head"><span class="step-num">2</span><h3>Sinais de sucesso esperados no log</h3></div>
+                    <table class="tbl">
+                        <thead><tr><th>Nível</th><th>message</th><th>Significado</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="lvl lvl-info">INFO</span></td>
+                                <td><code>Integration started</code></td>
+                                <td>CNPJ foi reconhecido e o ciclo iniciou</td>
+                            </tr>
+                            <tr>
+                                <td><span class="lvl lvl-info">INFO</span></td>
+                                <td><code>Integration completed</code></td>
+                                <td>Documentos encontrados e gravados no Blob Storage</td>
+                            </tr>
+                            <tr>
+                                <td><span class="lvl lvl-warn">WARN</span></td>
+                                <td>Mensagem de nenhum documento localizado</td>
+                                <td>Normal — API retornou HTTP 404. Nenhum incidente gerado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="step">
+                    <div class="step-head"><span class="step-num">3</span><h3>Verificar o ponteiro NSU atualizado</h3></div>
+                    <div class="code-wrap">
+                        <div class="code-lang">PowerShell</div>
+                        <pre><code><span class="cm"># Deve conter um número maior que zero após coleta bem-sucedida</span>
+<span class="kn">Get-Content</span> <span class="str">"C:\integron\nsu\98765432000100.txt"</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-head"><span class="step-num">4</span><h3>Verificar arquivos no Azure Blob Storage</h3></div>
+                    <p>No Portal Azure → Conta de Armazenamento → Contêineres → verifique se há uma pasta com o número do CNPJ contendo arquivos no formato <code>&lt;ChaveAcesso&gt;_&lt;NSU&gt;.XML</code>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════ RESOLUÇÃO ════ -->
+        <div class="card" id="resolucao">
+            <div class="card-header"><h2>Resolução de Problemas</h2></div>
+            <div class="card-body">
+                <p>Erros mais comuns após operações de CNPJ e como resolvê-los.</p>
+                <table class="tbl">
+                    <thead>
+                        <tr><th>Erro no log</th><th>Passo</th><th>Causa provável</th><th>Solução</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Arquivo <code>&lt;CNPJ&gt;.txt</code> ausente ou valor não-numérico</td>
+                            <td><code>STEP_04</code></td>
+                            <td>Arquivo de ponteiro NSU não foi criado ou está corrompido</td>
+                            <td>Criar o arquivo com <code>"0"</code> (ver Passo 2 de Adicionar CNPJ)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ClientAuthenticationException</code></td>
+                            <td><code>STEP_05</code></td>
+                            <td>Client secret expirado ou variáveis de ambiente ausentes</td>
+                            <td>Verificar variáveis <code>VaultTenantId</code>, <code>VaultClientId</code>, <code>VaultClientSecret</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>Failed to retrieve certificate '...'</code></td>
+                            <td><code>STEP_05</code></td>
+                            <td>Nome do certificado no <code>certificateName</code> não coincide com o segredo no Key Vault</td>
+                            <td>Verificar o nome exato no Portal Azure → Key Vault → Segredos e corrigir o YAML</td>
+                        </tr>
+                        <tr>
+                            <td><code>CredentialUnavailableException</code></td>
+                            <td><code>STEP_05</code></td>
+                            <td>Service Principal sem acesso ao Key Vault do CNPJ</td>
+                            <td>Atribuir o papel <code>Key Vault Secrets User</code> ao Service Principal</td>
+                        </tr>
+                        <tr>
+                            <td><code>StorageException</code></td>
+                            <td><code>STEP_17</code></td>
+                            <td>Service Principal sem acesso ao Blob Storage</td>
+                            <td>Atribuir o papel <code>Storage Blob Data Contributor</code></td>
+                        </tr>
+                        <tr>
+                            <td>CNPJ não aparece nos logs</td>
+                            <td>—</td>
+                            <td>Erro de sintaxe no YAML ou CNPJ com dígito verificador inválido</td>
+                            <td>Validar o YAML com um linter; verificar se o CNPJ possui 14 dígitos válidos</td>
+                        </tr>
+                        <tr>
+                            <td>Lista de contas vazia — falha na inicialização</td>
+                            <td><code>STEP_02</code></td>
+                            <td>Todos os CNPJs foram removidos do YAML</td>
+                            <td>Manter ao menos uma entrada no arquivo <code>config_cnpj_integration.yaml</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-wrap" style="margin-top:20px;">
+                    <div class="code-lang">PowerShell — filtrar logs por CNPJ</div>
+                    <pre><code><span class="kn">Get-Content</span> <span class="str">"C:\integron\logs\integron.log"</span> |
+  <span class="kn">Where-Object</span> { $_ -match <span class="str">"98765432000100"</span> }</code></pre>
+                </div>
+
+                <div class="callout success" style="margin-top:16px;">
+                    <span class="callout-icon">🔁</span>
+                    <div class="callout-body">
+                        <strong>Recuperação automática</strong>
+                        Após corrigir a causa raiz, <strong>não é necessário reiniciar o serviço</strong>. O próximo ciclo CRON retomará automaticamente a partir do último NSU registrado.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div><!-- /layout -->
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="site-footer">
+    <div class="footer-inner">
+        <p>IntegrOn NFS-e Collector &nbsp;·&nbsp; Winix Tech &nbsp;·&nbsp; Documento gerado em 2026-05-18</p>
+        <img src="./winix_logo_yellow.png" alt="Winix Tech" class="footer-logo">
+    </div>
+</footer>
+
+</body>
+</html>
